@@ -1,12 +1,16 @@
 package blackjacksd;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -17,10 +21,14 @@ public class Server {
     public static void main(String[] args) {
         try {
             ArrayList<Sala> salas = new ArrayList();
-            MulticastSocket msocket = new MulticastSocket(5555);
-            msocket.joinGroup(InetAddress.getByName("224.0.0.1"));
-            
-            
+            ServerSocket listenSocket = new ServerSocket(5555);
+
+            while(true) {
+                Socket clientSocket = listenSocket.accept();
+                ClientThread clientThread = new ClientThread(clientSocket);
+                clientThread.start();
+            }
+                      
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -28,23 +36,29 @@ public class Server {
     
 }
 
-class ReceiveThread extends Thread {
-    MulticastSocket multicastSocket = null;
-	
-    public ReceiveThread (MulticastSocket multicastSocket) {
-        this.multicastSocket = multicastSocket;
+class ClientThread extends Thread {
+
+    Socket clientSocket;
+    DataInputStream inputStream;
+    DataOutputStream outputStream;
+    
+    public ClientThread (Socket clientSocket) {
+        try {
+            this.clientSocket = clientSocket;
+            this.inputStream = new DataInputStream(clientSocket.getInputStream());
+            this.outputStream = new DataOutputStream(clientSocket.getOutputStream());
+        } catch (IOException ex) {
+            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void run() {
         try {
             while (true) {
-                byte[] buffer = new byte[1000];
-                DatagramPacket messageIn = new DatagramPacket(buffer, buffer.length);
-                multicastSocket.receive(messageIn);
-//                System.out.println("Recebido:" + new String(messageIn.getData(),0,messageIn.getLength()));
+               
             }
         } catch (Exception e) {
-                System.out.println(e);
+            System.out.println(e);
         }
     }
 }

@@ -18,6 +18,10 @@ public class Sala {
         this.nome = nome;
     }
     
+    public String getNome() {
+        return this.nome;
+    }
+    
     public boolean adicionarJogador(Socket jogador) {
         return jogadores.add(jogador);
     }
