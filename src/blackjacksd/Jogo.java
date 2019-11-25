@@ -41,33 +41,57 @@ public class Jogo {
                     Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                System.out.println("Começou a partida. Façam suas apostas.");
-                
-                if(sala.getJogador1().getNome().equals(jogador.getNome())) {
-                    System.out.println("É sua vez. Digite a sua aposta: ");
-                    int valor = scanner.nextInt();
-                    apostar(valor);
-//                    atualizaSala(sala.getId());
-                } else {
+                while(true) {
+                    System.out.println("Começou a partida. Façam suas apostas.");
+
+                    if(sala.getJogador1().getNome().equals(jogador.getNome())) {
+                        System.out.println("É sua vez. Digite a sua aposta: ");
+                        int valor = scanner.nextInt();
+                        apostar(valor);
+    //                    atualizaSala(sala.getId());
+                    } else {
+                        try {
+                            System.out.println("É a vez de " + sala.getJogador1().getNome());
+                            System.out.println(sala.getJogador1().getNome() + " apostou " + in.readInt());
+                        } catch (IOException ex) {
+                            Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+
+                    if(sala.getJogador2().getNome().equals(jogador.getNome())) {
+                        System.out.println("É sua vez. Digite a sua aposta: ");
+                        int valor = scanner.nextInt();
+                        apostar(valor);
+    //                    atualizaSala(sala.getId());
+                    } else {
+                        try {
+                            System.out.println("É a vez de " + sala.getJogador2().getNome());
+                            System.out.println(sala.getJogador2().getNome() + " apostou " + in.readInt());
+                        } catch (IOException ex) {
+                            Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    
+                    pedirCarta();
+                    System.out.println("Distribuindo cartas...");
                     try {
-                        System.out.println("É a vez de " + sala.getJogador1().getNome());
-                        System.out.println(sala.getJogador1().getNome() + " apostou " + in.readInt());
-                    } catch (IOException ex) {
+                        sleep(1000);
+                    } catch (InterruptedException ex) {
                         Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                
-                if(sala.getJogador2().getNome().equals(jogador.getNome())) {
-                    System.out.println("É sua vez. Digite a sua aposta: ");
-                    int valor = scanner.nextInt();
-                    apostar(valor);
-//                    atualizaSala(sala.getId());
-                } else {
-                    try {
-                        System.out.println("É a vez de " + sala.getJogador2().getNome());
-                        System.out.println(sala.getJogador2().getNome() + " apostou " + in.readInt());
-                    } catch (IOException ex) {
-                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                    atualizaSala(sala.getId());
+                    
+                    if(sala.getJogador1().getNome().equals(jogador.getNome())) {
+                        System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
+                        System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
+                    } else {
+                        System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
+                        System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
+                    }
+                    
+                    
+                    while(true) {
+                        
                     }
                 }
             }
@@ -105,6 +129,14 @@ public class Jogo {
     public void apostar(int valor) {
         try {
             this.out.writeObject(new Mensagem(Operacoes.APOSTA, valor));
+        } catch (IOException ex) {
+            Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void pedirCarta() {
+        try {
+            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA));
         } catch (IOException ex) {
             Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
         }

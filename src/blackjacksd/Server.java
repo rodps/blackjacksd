@@ -128,13 +128,11 @@ class ClientThread extends Thread {
                             out.reset();
                             out.writeInt(valor);
                             out.flush();
-                            System.out.println("escrever para " + s.getJogador1().getNome());
                         } else {
                             ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
                             out.reset();
                             out.writeInt(valor);  
                             out.flush();
-                            System.out.println("escrever para " + s.getJogador2().getNome());
                         }
                         break;
                     }
