@@ -1,6 +1,7 @@
 
 package protocolo;
 
+import blackjacksd.Sala;
 import java.io.Serializable;
 
 /**
@@ -11,6 +12,7 @@ public class Mensagem implements Serializable {
     private Operacoes op;
     private Tipo tipo;
     private Serializable dados;
+    private Sala sala;
     private String mensagem;
     
     public Mensagem(Operacoes op, Serializable dados) {
@@ -28,6 +30,14 @@ public class Mensagem implements Serializable {
     
     public Serializable getDados() {
         return dados;
+    }
+    
+    public Sala getSala() {
+        return sala;
+    }
+    
+    public void setSala(Sala sala) {
+        this.sala = sala;
     }
     
     public void setTipo(Tipo tipo) {

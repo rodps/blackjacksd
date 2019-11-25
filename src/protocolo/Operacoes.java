@@ -13,5 +13,6 @@ public enum Operacoes {
     PEDIR_CARTA,
     PARAR,
     INICIAR,
-    ATUALIZAR;
+    ATUALIZAR,
+    LOGIN;
 }

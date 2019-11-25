@@ -29,12 +29,13 @@ public class Server {
         try {
             GerenciadorSalas gSalas = new GerenciadorSalas();
             ServerSocket listenSocket = new ServerSocket(5555);
+            HashMap<Jogador, Socket> jogadorSocket = new HashMap<>();
 
             System.out.println("Aguardando conexões...");
             while(true) {
                 Socket clientSocket = listenSocket.accept();
                 System.out.println("Cliente conectado. IP: " + clientSocket.getInetAddress());
-                ClientThread clientThread = new ClientThread(clientSocket, gSalas);
+                ClientThread clientThread = new ClientThread(clientSocket, gSalas, jogadorSocket);
                 clientThread.start();
             }
                       
@@ -49,22 +50,18 @@ class ClientThread extends Thread {
 
     Socket clientSocket;
     GerenciadorSalas gSalas;
-    DataInputStream inputStream;
-    DataOutputStream outputStream;
     ObjectOutputStream objOutputStream;
     ObjectInputStream objInputStream;
-    HashMap<Jogador, Socket> jogadorSocket;
     HashMap<Jogador, Sala> jogadorSala;
+    HashMap<Jogador, Socket> jogadorSocket;
     
-    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas) {
+    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket) {
         try {
             this.clientSocket = clientSocket;
             this.gSalas = gSalas;
-            this.inputStream = new DataInputStream(clientSocket.getInputStream());
-            this.outputStream = new DataOutputStream(clientSocket.getOutputStream());
-            this.objOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             this.objInputStream = new ObjectInputStream(clientSocket.getInputStream());
-            this.jogadorSocket = new HashMap<>();
+            this.objOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            this.jogadorSocket = jogadorSocket;
             this.jogadorSala = new HashMap<>();
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
@@ -73,20 +70,21 @@ class ClientThread extends Thread {
 
     public void run() {
         try {
-            String username = inputStream.readUTF();
-            Jogador jogador = new Jogador(username);
+            Mensagem login = (Mensagem) objInputStream.readObject();
+            Jogador jogador = new Jogador((String) login.getDados());
+            objOutputStream.writeObject(jogador);
             jogadorSocket.put(jogador, clientSocket);
-            System.out.println(username + " entrou.");
+            System.out.println(login.getDados() + " entrou.");
             
-            while (true) {                
+            while (true) {    
                 Mensagem msg = (Mensagem) objInputStream.readObject();
                 Mensagem resposta = new Mensagem(Operacoes.RESPOSTA);
                 switch(msg.getOp()) {
                     case CRIAR_SALA: {
-                        Sala sala = gSalas.criarSala((String) msg.getDados());
-                        sala.adicionarJogador(jogador);
+                        Sala sala = gSalas.criarSala((String) msg.getDados(), jogador);
                         jogadorSala.put(jogador, sala);
                         resposta.setTipo(Tipo.SUCESSO);
+                        resposta.setDados(sala);
                         objOutputStream.writeObject(resposta);
                         break;
                     }
@@ -100,32 +98,43 @@ class ClientThread extends Thread {
                         int idsala = (int) msg.getDados();
                         Sala sala = gSalas.procurarSala(idsala);
                         sala.adicionarJogador(jogador);
-                        resposta.setTipo(Tipo.SUCESSO);
-                        objOutputStream.writeObject(resposta);
+                        jogadorSala.put(jogador, sala);
+                        Mensagem resp = new Mensagem(Operacoes.RESPOSTA);
+                        resp.setTipo(Tipo.SUCESSO);
+                        resp.setDados(sala);
+                        System.out.println(sala.getJogador1());
+                        System.out.println(sala.getJogador2());
+                        objOutputStream.writeObject(resp);
                         break;
+                    }
+                    case ATUALIZAR: {
+                        int idsala = (int) msg.getDados();
+                        Sala sala = gSalas.procurarSala(idsala);
+                        resposta.setSala(sala);
+                        System.out.println(sala.getJogador2());
+                        objOutputStream.reset();
+                        objOutputStream.writeObject(resposta);
+                    }
+                    case APOSTA: {
+//                        int valor = (int) msg.getDados();
+//                        jogador.apostar(valor);
+//                        ArrayList<Jogador> jogadores = jogadorSala.get(jogador).getJogadores();
+//                        for (Jogador j : jogadores) {
+//                            if(j != jogador){
+//                                Socket s = jogadorSocket.get(j);
+//                                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+//                                out.writeInt(valor);
+//                            }
+//                        }
                     }
                 }
             }         
             
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (IOException ioe) {
+           ioe.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
         }
-    }
-    
-    public void atualizarJogadores(Sala sala) {
-        
     }
 
-    public void comecarJogo(Sala sala) {
-        ArrayList<Jogador> jogadores = sala.getJogadores();
-        for (Jogador jogador : jogadores) {
-            Socket s = jogadorSocket.get(jogador);
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-                out.writeObject(new Mensagem(Operacoes.INICIAR, sala));
-            } catch (IOException ex) {
-                Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
 }

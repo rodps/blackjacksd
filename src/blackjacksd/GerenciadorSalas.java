@@ -21,8 +21,8 @@ public class GerenciadorSalas {
         salas = new HashMap();
     }
     
-    public synchronized Sala criarSala(String nome) {
-        Sala novaSala = new Sala(nome, ids);
+    public synchronized Sala criarSala(String nome, Jogador j1) {
+        Sala novaSala = new Sala(nome, ids, j1);
         salas.put(ids++, novaSala);
         return novaSala;
     }

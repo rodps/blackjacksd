@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import static java.lang.Thread.sleep;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -32,12 +33,10 @@ public class Client {
             
             ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-           
+                       
             String username = JOptionPane.showInputDialog("Digite seu nome de usuário:");
-            out.writeUTF(username);
-//            Jogador jogador = (Jogador) objIn.readObject();
+            objOut.writeObject(new Mensagem(Operacoes.LOGIN, username));
+            Jogador jogador = (Jogador) objIn.readObject();
             
             while (true) {                
                 String[] options = {"Criar sala", "Ver salas"};
@@ -61,6 +60,9 @@ public class Client {
                             Mensagem resp = (Mensagem) objIn.readObject();
                             if(resp.getTipo() == Tipo.SUCESSO) {
                                 System.out.println("Sala criada com sucesso");
+                                Sala sala = (Sala) resp.getDados();
+                                Jogo jogo = new Jogo(jogador, objIn, objOut, sala);
+                                jogo.iniciar();
                             } else if(resp.getTipo() == Tipo.ERRO) {
                                 System.out.println("Erro ao criar sala: " + resp.getMensagem());
                             }
@@ -82,13 +84,18 @@ public class Client {
                         if(idsala != null) {
                             objOut.writeObject(new Mensagem(Operacoes.ENTRAR_SALA,
                                                             Integer.parseInt(idsala)));
-                            resp = (Mensagem) objIn.readObject();
-                            if (resp.getTipo() == Tipo.SUCESSO) {
+                            Mensagem r = (Mensagem) objIn.readObject();
+                            
+                            if (r.getTipo() == Tipo.SUCESSO) {
                                 System.out.println("Você entrou na sala");
-                                
-                            } else if (resp.getTipo() == Tipo.ERRO) {
+                                Sala sala = (Sala) r.getDados();
+                                System.out.println(sala.getJogador2());
+                                Jogo jogo = new Jogo(jogador, objIn, objOut, sala);
+                                jogo.iniciar();
+                            } else if (r.getTipo() == Tipo.ERRO) {
                                 System.out.println("Não foi possível entrar na sala: "
-                                                    + resp.getMensagem());
+                                                    + r.getMensagem());
+                                
                             }
                         }
                         break;
@@ -104,4 +111,3 @@ public class Client {
         }
     }
 }
-

@@ -11,19 +11,39 @@ import java.util.Arrays;
  */
 public class Sala implements Serializable {
     
-    private ArrayList<Jogador> jogadores = new ArrayList(2);
-    private ArrayList<Jogador> espectadores = new ArrayList();
+    private Jogador jogador1;
+    private Jogador jogador2;
+    private ArrayList<Jogador> espectadores;
     private String nome;
     private int id;
     private int vez;
-    public boolean apostas;
     
-    public Sala(String nome, int id) {
+    public Sala(String nome, int id, Jogador jogador1) {
         this.nome = nome;
         this.id = id;
-        this.vez = 0;
-        apostas = true;
+        this.vez = -1;
+        this.jogador1 = jogador1;
+        this.jogador2 = null;
+        this.espectadores = new ArrayList();
     }
+
+    public Jogador getJogador1() {
+        return jogador1;
+    }
+
+    public void setJogador1(Jogador jogador1) {
+        this.jogador1 = jogador1;
+    }
+
+    public Jogador getJogador2() {
+        return jogador2;
+    }
+
+    public void setJogador2(Jogador jogador2) {
+        this.jogador2 = jogador2;
+    }
+    
+    
     
     public String getNome() {
         return this.nome;
@@ -32,21 +52,25 @@ public class Sala implements Serializable {
     public int getId() {
         return this.id;
     }
-   
-    public ArrayList<Jogador> getJogadores() {
-        return this.jogadores;
-    }
-    
-    public int quantidadeJogadores() {
-        return this.jogadores.size();
-    }
     
     public boolean adicionarJogador(Jogador jogador) {
-        return jogadores.add(jogador);
+        if(jogador2 == null){
+            this.jogador2 = jogador;
+            return true;
+        }
+        return false;
     }
     
     public boolean removerJogador(Jogador jogador) {
-        return jogadores.remove(jogador);
+        if(jogador1 == jogador) {
+            jogador1 = jogador2;
+            jogador2 = null;
+        }
+        else if(jogador2 == jogador)
+            jogador2 = null;
+        else
+            return false;
+        return true;
     }
     
     public boolean adicionarEspectador(Jogador espec) {
@@ -55,14 +79,6 @@ public class Sala implements Serializable {
     
     public boolean removerEspectador(Jogador espec) {
         return espectadores.remove(espec);
-    }
-    
-    public Jogador proximoAJogar() {
-        vez += 1;
-        if (vez >= jogadores.size()) {
-            vez = 0;
-        }
-        return jogadores.get(vez);
     }
         
 }
