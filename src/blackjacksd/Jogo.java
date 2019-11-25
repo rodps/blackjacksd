@@ -42,12 +42,12 @@ public class Jogo {
                 }
             } else {
                 System.out.println("Começou a partida. Façam suas apostas.");
-                System.out.println(sala.getJogador2());
+                
                 if(sala.getJogador1().getNome().equals(jogador.getNome())) {
                     System.out.println("É sua vez. Digite a sua aposta: ");
                     int valor = scanner.nextInt();
                     apostar(valor);
-                    atualizaSala(sala.getId());
+//                    atualizaSala(sala.getId());
                 } else {
                     try {
                         System.out.println("É a vez de " + sala.getJogador1().getNome());
@@ -61,11 +61,11 @@ public class Jogo {
                     System.out.println("É sua vez. Digite a sua aposta: ");
                     int valor = scanner.nextInt();
                     apostar(valor);
-                    atualizaSala(sala.getId());
+//                    atualizaSala(sala.getId());
                 } else {
                     try {
-                        System.out.println("É a vez de " + sala.getJogador1().getNome());
-                        System.out.println(sala.getJogador1().getNome() + " apostou " + in.readInt());
+                        System.out.println("É a vez de " + sala.getJogador2().getNome());
+                        System.out.println(sala.getJogador2().getNome() + " apostou " + in.readInt());
                     } catch (IOException ex) {
                         Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
                     }

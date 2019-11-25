@@ -30,12 +30,13 @@ public class Server {
             GerenciadorSalas gSalas = new GerenciadorSalas();
             ServerSocket listenSocket = new ServerSocket(5555);
             HashMap<Jogador, Socket> jogadorSocket = new HashMap<>();
+            HashMap<Jogador, JogadorStream> streams = new HashMap<>();
 
             System.out.println("Aguardando conexões...");
             while(true) {
                 Socket clientSocket = listenSocket.accept();
                 System.out.println("Cliente conectado. IP: " + clientSocket.getInetAddress());
-                ClientThread clientThread = new ClientThread(clientSocket, gSalas, jogadorSocket);
+                ClientThread clientThread = new ClientThread(clientSocket, gSalas, jogadorSocket, streams);
                 clientThread.start();
             }
                       
@@ -54,8 +55,9 @@ class ClientThread extends Thread {
     ObjectInputStream objInputStream;
     HashMap<Jogador, Sala> jogadorSala;
     HashMap<Jogador, Socket> jogadorSocket;
+    HashMap<Jogador, JogadorStream> streams;
     
-    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket) {
+    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket, HashMap streams) {
         try {
             this.clientSocket = clientSocket;
             this.gSalas = gSalas;
@@ -63,6 +65,7 @@ class ClientThread extends Thread {
             this.objOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             this.jogadorSocket = jogadorSocket;
             this.jogadorSala = new HashMap<>();
+            this.streams = streams;
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -75,6 +78,9 @@ class ClientThread extends Thread {
             objOutputStream.writeObject(jogador);
             jogadorSocket.put(jogador, clientSocket);
             System.out.println(login.getDados() + " entrou.");
+            
+            streams.put(jogador, new JogadorStream(jogador, objOutputStream, objInputStream));
+
             
             while (true) {    
                 Mensagem msg = (Mensagem) objInputStream.readObject();
@@ -102,8 +108,6 @@ class ClientThread extends Thread {
                         Mensagem resp = new Mensagem(Operacoes.RESPOSTA);
                         resp.setTipo(Tipo.SUCESSO);
                         resp.setDados(sala);
-                        System.out.println(sala.getJogador1());
-                        System.out.println(sala.getJogador2());
                         objOutputStream.writeObject(resp);
                         break;
                     }
@@ -111,21 +115,28 @@ class ClientThread extends Thread {
                         int idsala = (int) msg.getDados();
                         Sala sala = gSalas.procurarSala(idsala);
                         resposta.setSala(sala);
-                        System.out.println(sala.getJogador2());
                         objOutputStream.reset();
                         objOutputStream.writeObject(resposta);
+                        break;
                     }
                     case APOSTA: {
-//                        int valor = (int) msg.getDados();
-//                        jogador.apostar(valor);
-//                        ArrayList<Jogador> jogadores = jogadorSala.get(jogador).getJogadores();
-//                        for (Jogador j : jogadores) {
-//                            if(j != jogador){
-//                                Socket s = jogadorSocket.get(j);
-//                                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-//                                out.writeInt(valor);
-//                            }
-//                        }
+                        int valor = (int) msg.getDados();
+                        jogador.apostar(valor);
+                        Sala s = jogadorSala.get(jogador);
+                        if(s.getJogador1() != jogador) {
+                            ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
+                            out.reset();
+                            out.writeInt(valor);
+                            out.flush();
+                            System.out.println("escrever para " + s.getJogador1().getNome());
+                        } else {
+                            ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
+                            out.reset();
+                            out.writeInt(valor);  
+                            out.flush();
+                            System.out.println("escrever para " + s.getJogador2().getNome());
+                        }
+                        break;
                     }
                 }
             }         

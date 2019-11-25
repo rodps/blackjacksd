@@ -89,7 +89,6 @@ public class Client {
                             if (r.getTipo() == Tipo.SUCESSO) {
                                 System.out.println("Você entrou na sala");
                                 Sala sala = (Sala) r.getDados();
-                                System.out.println(sala.getJogador2());
                                 Jogo jogo = new Jogo(jogador, objIn, objOut, sala);
                                 jogo.iniciar();
                             } else if (r.getTipo() == Tipo.ERRO) {
