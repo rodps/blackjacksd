@@ -14,5 +14,6 @@ public enum Operacoes {
     PARAR,
     INICIAR,
     ATUALIZAR,
-    LOGIN;
+    LOGIN,
+    SAIR;
 }

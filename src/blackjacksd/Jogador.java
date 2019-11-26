@@ -13,24 +13,22 @@ public class Jogador implements Serializable{
     private String nome;
     private int fichas;
     private int aposta;
-    private String estado;
+    private boolean parou;
     
     public Jogador(String nome) {
         this.nome = nome;
         this.cartas = 0;
         this.fichas = 0;
-        this.estado = "assistindo";
+        this.parou = false;
     }
 
-    public String getEstado() {
-        return estado;
+    public boolean isParou() {
+        return parou;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
+    public void setParou(boolean parou) {
+        this.parou = parou;
     }
-    
-    
     
     public void darCarta(int carta) {
         this.cartas += carta;
