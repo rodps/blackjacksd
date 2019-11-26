@@ -104,6 +104,7 @@ class ClientThread extends Thread {
                         resp.setDados(sala);
                         System.out.println(sala.getJogador1());
                         System.out.println(sala.getJogador2());
+                        objOutputStream.reset();
                         objOutputStream.writeObject(resp);
                         break;
                     }
@@ -116,16 +117,16 @@ class ClientThread extends Thread {
                         objOutputStream.writeObject(resposta);
                     }
                     case APOSTA: {
-//                        int valor = (int) msg.getDados();
-//                        jogador.apostar(valor);
-//                        ArrayList<Jogador> jogadores = jogadorSala.get(jogador).getJogadores();
-//                        for (Jogador j : jogadores) {
-//                            if(j != jogador){
-//                                Socket s = jogadorSocket.get(j);
-//                                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-//                                out.writeInt(valor);
-//                            }
-//                        }
+                        int valor = (int) msg.getDados();
+                        jogador.apostar(valor);
+                        Sala s = jogadorSala.get(jogador);
+                        for (Jogador j : jogadores) {
+                            if(j != jogador){
+                                Socket s = jogadorSocket.get(j);
+                                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+                                out.writeInt(valor);
+                            }
+                        }
                     }
                 }
             }         

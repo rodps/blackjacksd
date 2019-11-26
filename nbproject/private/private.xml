@@ -5,7 +5,9 @@
         <group>
             <file>file:/home/rodrigo/Documentos/blackjacksd/src/blackjacksd/Server.java</file>
             <file>file:/home/rodrigo/Documentos/blackjacksd/src/blackjacksd/Sala.java</file>
+            <file>file:/home/rodrigo/Documentos/blackjacksd/src/blackjacksd/Jogador.java</file>
             <file>file:/home/rodrigo/Documentos/blackjacksd/src/blackjacksd/Client.java</file>
+            <file>file:/home/rodrigo/Documentos/blackjacksd/src/protocolo/Mensagem.java</file>
             <file>file:/home/rodrigo/Documentos/blackjacksd/src/blackjacksd/Jogo.java</file>
         </group>
     </open-files>
