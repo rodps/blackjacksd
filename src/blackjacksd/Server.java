@@ -92,6 +92,7 @@ class ClientThread extends Thread {
                         resposta.setTipo(Tipo.SUCESSO);
                         resposta.setDados(sala);
                         objOutputStream.writeObject(resposta);
+                        
                         break;
                     }
                     case VER_SALAS: {
@@ -108,14 +109,15 @@ class ClientThread extends Thread {
                         Mensagem resp = new Mensagem(Operacoes.RESPOSTA);
                         resp.setTipo(Tipo.SUCESSO);
                         resp.setDados(sala);
-                        objOutputStream.reset();
+                        
                         objOutputStream.writeObject(resp);
                         break;
                     }
                     case ATUALIZAR: {
                         int idsala = (int) msg.getDados();
                         Sala sala = gSalas.procurarSala(idsala);
-                        resposta.setSala(sala);
+                        resposta.setDados(sala);
+                        resposta.setOp(Operacoes.ATUALIZAR);
                         objOutputStream.reset();
                         objOutputStream.writeObject(resposta);
                         break;
@@ -123,36 +125,69 @@ class ClientThread extends Thread {
                     case APOSTA: {
                         int valor = (int) msg.getDados();
                         jogador.apostar(valor);
-                        Sala s = jogadorSala.get(jogador);
-                        if(s.getJogador1() != jogador) {
-                            ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
-                            out.reset();
-                            out.writeInt(valor);
-                            out.flush();
-                        } else {
-                            ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
-                            out.reset();
-                            out.writeInt(valor);  
-                            out.flush();
-                        }
+                        
                         break;
                     }
                     case PEDIR_CARTA: {
                         jogador.darCarta(random.nextInt(10)+1);
+                        Sala s = jogadorSala.get(jogador);
+                        if(s.getJogador1() != jogador) {
+                            ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
+                            out.reset();
+                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA));
+                            out.reset();
+                            out.flush();
+                        } else {
+                            ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
+                            out.reset();
+                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA)); 
+                            out.reset();
+                            out.flush();
+                        }
                         break;
                     }
+                                        
                     case PARAR: {
                         jogador.setParou(true);
+                        Sala s = jogadorSala.get(jogador);
+                       
+                        if(s.getJogador1() != jogador) {
+                            ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
+                            out.reset();
+                            out.writeObject(new Mensagem(Operacoes.PARAR));
+                            out.flush();
+                        } else {
+                            ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
+                            out.reset();
+                            out.writeObject(new Mensagem(Operacoes.PARAR));  
+                            out.flush();
+                        }
+
+                        break;
+                    }
+                    case SAIR: {
+                        Sala s = jogadorSala.get(jogador);
+                        s.removerJogador(jogador);
+                        jogadorSala.remove(jogador);
+                        break;
+                    }
+                    case NOVA_PARTIDA: {
+                        jogador.setParou(false);
+                        Sala s = jogadorSala.get(jogador);
+                        Jogador vez = s.getVez();
+                        JogadorStream js = streams.get(vez);
+                        js.getOutput().writeObject(new Mensagem(Operacoes.SUA_VEZ));
                         break;
                     }
                 }
             }         
-            
-        } catch (IOException ioe) {
-           ioe.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+            
+
     }
 
 }

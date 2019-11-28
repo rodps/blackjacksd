@@ -14,6 +14,7 @@ public class Jogador implements Serializable{
     private int fichas;
     private int aposta;
     private boolean parou;
+    private boolean emEspera;
     
     public Jogador(String nome) {
         this.nome = nome;
@@ -21,6 +22,17 @@ public class Jogador implements Serializable{
         this.fichas = 0;
         this.parou = false;
     }
+
+    public boolean isEmEspera() {
+        return emEspera;
+    }
+
+    public void setEmEspera(boolean emEspera) {
+        this.emEspera = emEspera;
+    }
+    
+    
+    
 
     public boolean isParou() {
         return parou;
@@ -44,6 +56,10 @@ public class Jogador implements Serializable{
     
     public void apostar(int valor) {
         this.aposta = valor;
+    }
+    
+    public int getAposta() {
+        return aposta;
     }
     
     public int getCartas() {

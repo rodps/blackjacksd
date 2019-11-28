@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import protocolo.Mensagem;
 import protocolo.Operacoes;
 
@@ -30,162 +31,232 @@ public class Jogo {
     }
     
     public void iniciar() {
-        Scanner scanner = new Scanner(System.in);
+        
         while (true) {
             atualizaSala(sala.getId());
+            System.out.println("\n");
             System.out.println("Aguardando outro jogador...");
-            while(sala.getJogador2() == null) {
+            while(sala.getJogador2() == null || sala.getJogador1() == null ||
+                    sala.getJogador1().isParou() || sala.getJogador2().isParou()) {
                 try {
                     sleep(1000);
                     atualizaSala(sala.getId());
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            String aposta = JOptionPane.showInputDialog("Faça sua aposta:"); 
+            System.out.println("Você apostou " + aposta);
+            apostar(Integer.parseInt(aposta));
+            
+            atualizaSala(sala.getId());
+            
+            System.out.println("Aguardando outro jogador...");
+            while(sala.getJogador1().getAposta()  == 0 |
+                    sala.getJogador2().getAposta() == 0) {
+
+                atualizaSala(sala.getId());
+            }
+            if (jogador.getNome().equals(sala.getJogador1().getNome())) {
+                System.out.println(sala.getJogador2().getNome() + " apostou " + sala.getJogador2().getAposta());
+            } else {
+                System.out.println(sala.getJogador1().getNome() + " apostou " + sala.getJogador1().getAposta());
+            }
+            
+
+//            pedirCarta();
+//            try {
+//                in.readObject();
+//            } catch (IOException ex) {
+//                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (ClassNotFoundException ex) {
+//                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+
+            System.out.println("\n");
+            System.out.println("Distribuindo cartas...");
+            try {
+                sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            atualizaSala(sala.getId());
+            while (true) {    
+                if (sala.getJogador1().getNome().equals(jogador.getNome())) {
+                    if(sala.getJogador1().getCartas() > 21){
+                        System.out.println("\n");
+                        System.out.println("Você estourou!");
+                        parar();
+                        break;
+                    }
+                    System.out.println("\nentro");
+                    System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
+                    System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
+
+                    String[] options = {"Pedir carta", "Parar"};
+                    int option = JOptionPane.showOptionDialog(
+                                   null
+                                 , "O que deseja?"        
+                                 , "Blackjack 21"               
+                                 , JOptionPane.YES_NO_OPTION  
+                                 , JOptionPane.PLAIN_MESSAGE                               
+                                 , null
+                                 , options
+                                 , null
+                               );
+                    if(option == 0) {
+                        pedirCarta();
+                        atualizaSala(sala.getId());
+                    }
+                    if(option == 1) {
+                        parar();
+                        break;
+                    }
+                } else {
+                    int ultimacarta = sala.getVez().getCartas();
+                    try {
+                        System.out.println("\n");
+                        System.out.println("É a vez de " + sala.getVez().getNome());
+                        System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
+                        System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
+                        if(sala.getJogador1().isParou()){
+                            System.out.println(sala.getJogador1().getNome() + " parou.");
+                            break;
+                        }
+                        Mensagem msg = (Mensagem) in.readObject();
+                        if(msg.getOp() == Operacoes.PEDIR_CARTA) {
+                            atualizaSala(sala.getId());
+                        }
+                        if(msg.getOp() == Operacoes.PARAR) {
+                            break;
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
             
-                System.out.println("Começou a partida. Façam suas apostas.");
-
-                if(sala.getJogador1().getNome().equals(jogador.getNome())) {
-                    System.out.println("É sua vez. Digite a sua aposta: ");
-                    int valor = scanner.nextInt();
-                    apostar(valor);
-//                    atualizaSala(sala.getId());
-                } else {
-                    try {
-                        System.out.println("É a vez de " + sala.getJogador1().getNome());
-                        System.out.println(sala.getJogador1().getNome() + " apostou " + in.readInt());
-                    } catch (IOException ex) {
-                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                if(sala.getJogador2().getNome().equals(jogador.getNome())) {
-                    System.out.println("É sua vez. Digite a sua aposta: ");
-                    int valor = scanner.nextInt();
-                    apostar(valor);
-//                    atualizaSala(sala.getId());
-                } else {
-                    try {
-                        System.out.println("É a vez de " + sala.getJogador2().getNome());
-                        System.out.println(sala.getJogador2().getNome() + " apostou " + in.readInt());
-                    } catch (IOException ex) {
-                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                pedirCarta();
-                System.out.println("Distribuindo cartas...");
-                try {
-                    sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-                }
-//                    atualizaSala(sala.getId());
-
-//                    if(sala.getJogador1().getNome().equals(jogador.getNome())) {
-//                        System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
-//                        System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
-//                    } else {
-//                        System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
-//                        System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
-//                    }
-
-                while(true) {
-                    atualizaSala(sala.getId());
-                    if(sala.getJogador1().getNome().equals(jogador.getNome())) {
-                        if(sala.getJogador1().getCartas() > 21){
-                            System.out.println("Você estourou!");
-                            parar();
-                            break;
-                        }
-                        System.out.println("É sua vez.");
-                        System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
-                        System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
-                        System.out.println("1 - Pedir carta");
-                        System.out.println("2 - Parar");
-                        int op = scanner.nextInt();
-                        if(op == 1) {
-                            pedirCarta();
-                        }
-                        if(op == 2) {
-                            parar();
-                            break;
-                        }
-                    } else {
-                        System.out.println("É a vez de " + sala.getJogador1().getNome());
-                        System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
-                        System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
-                        while (!sala.getJogador1().isParou()) {                                
-                            try {
-                                sleep(1000);
-                                atualizaSala(sala.getId());
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
+            while (true) { 
+                if(sala.getJogador1().getCartas() > 21){
                         break;
-                    }
                 }
-                while(true) {
-                    atualizaSala(sala.getId());
-                    if(sala.getJogador2().getNome().equals(jogador.getNome())) {
-                        if (sala.getJogador1().getCartas() > 21) {
-                            System.out.println(sala.getJogador1().getNome() + "estourou.");
-                            System.out.println("Você venceu!");
-                            break;
-                        }
-                        if (sala.getJogador2().getCartas() > 21) {
-                            System.out.println("Você estourou!");
-                            parar();
-                            break;
-                        }
-                        System.out.println("É sua vez.");
-                        System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
-                        System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
-                        System.out.println("1 - Pedir carta");
-                        System.out.println("2 - Parar");
-                        int op = scanner.nextInt();
-                        if(op == 1) {
-                            pedirCarta();
-                        }
-                        if(op == 2) {
-                            parar();
-                            break;
-                        }
-                    } else {
-                        if (sala.getJogador1().getCartas() > 21) {
-                            break;
-                        }
-                        System.out.println("É a vez de " + sala.getJogador2().getNome());
-                        System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
-                        System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
-                        while (!sala.getJogador2().isParou()) {                                
-                            try {
-                                sleep(1000);
-                                atualizaSala(sala.getId());
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                        break;
-                    }
-                }
-                if(sala.getJogador1().getNome().equals(jogador.getNome())) {
+                if (sala.getJogador2().getNome().equals(jogador.getNome())) {
                     if(sala.getJogador2().getCartas() > 21){
-                        System.out.println(sala.getJogador2().getNome() + "estourou.");
-                        System.out.println("Você venceu!");
+                        System.out.println("\n");
+                        System.out.println("Você estourou!");
+                        parar();
                         break;
                     }
-                }
+                    if(sala.getJogador1().getCartas() > 21){
+                        System.out.println("\n");
+                        System.out.println(sala.getJogador1().getNome() + " estourou. Você venceu!");
+                        parar();
+                        break;
+                    }
+                    System.out.println("\n");
+                    System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
+                    System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
 
-            sair();
-            System.out.println("Novo partida? y/n");
-            String res = scanner.next();
-            if(res.equals('n')){
+                    String[] options = {"Pedir carta", "Parar"};
+                    int option = JOptionPane.showOptionDialog(
+                                   null
+                                 , "O que deseja?"        
+                                 , "Blackjack 21"               
+                                 , JOptionPane.YES_NO_OPTION  
+                                 , JOptionPane.PLAIN_MESSAGE                               
+                                 , null
+                                 , options
+                                 , null
+                               );
+                    if(option == 0) {
+                        pedirCarta();
+                        atualizaSala(sala.getId());
+                    }
+                    if(option == 1) {
+                        parar();
+                        break;
+                    }
+                } else {
+                    try {
+                        System.out.println("\n");
+                        System.out.println("É a vez de " + sala.getVez().getNome());
+                        System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
+                        System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
+                        if(sala.getJogador2().isParou()){
+                            System.out.println(sala.getJogador1().getNome() + " parou.");
+                            break;
+                        }
+                        Mensagem msg = (Mensagem) in.readObject();
+                        if(msg.getOp() == Operacoes.PEDIR_CARTA) {
+                            atualizaSala(sala.getId());
+                        }
+                        if(msg.getOp() == Operacoes.PARAR) {
+                            break;
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+            if(sala.getJogador1().getNome().equals(jogador.getNome())) {
+                if(sala.getJogador2().getCartas() > 21){
+                    System.out.println("\n");
+                    System.out.println(sala.getJogador2().getNome() + "estourou.");
+                    break;
+                }
+            }
+
+            atualizaSala(sala.getId());
+            String msgFinal;
+            if(sala.getJogador1().getCartas() > sala.getJogador2().getCartas()){
+                if(sala.getJogador1().getNome().equals(jogador.getNome())) {
+                    if(sala.getJogador1().getCartas() <= 21){
+                        msgFinal = "Você venceu! :)";
+                    } else {
+                        msgFinal = "Você perdeu! :[";
+                    }                  
+                } else {
+                    if(sala.getJogador1().getCartas() > 21){
+                        msgFinal = "Você venceu! :)";
+                    } else {
+                        msgFinal = "Você perdeu! :[";
+                    }
+                }
+            } else if(sala.getJogador1().getCartas() == sala.getJogador2().getCartas()) {
+                msgFinal = "Empate! :|";
+            } else {
+                if(sala.getJogador2().getNome().equals(jogador.getNome())) {
+                    if(sala.getJogador2().getCartas() <= 21){
+                        msgFinal = "Você venceu! :)";
+                    } else {
+                        msgFinal = "Você perdeu! :[";
+                    }                  
+                } else {
+                    if(sala.getJogador2().getCartas() > 21){
+                        msgFinal = "Você venceu! :)";
+                    } else {
+                        msgFinal = "Você perdeu! :[";
+                    }
+                }
+            }
+            
+            int res = JOptionPane.showConfirmDialog(null,
+                    msgFinal + "\nNova partida?",
+                    "Fim de jogo",
+                    JOptionPane.YES_NO_OPTION);
+            if(res == 1){
+                sair();
                 return;
             }
-            entrar(sala.getId());
+            System.out.println("\n");
             System.out.println("Iniciando nova partida em 5 segundos");
+            
             try {
                 sleep(5000);
             } catch (InterruptedException ex) {
@@ -197,8 +268,8 @@ public class Jogo {
     public void atualizaSala(int idsala) {
         try {
             this.out.writeObject(new Mensagem(Operacoes.ATUALIZAR, idsala));
-            Mensagem resp = (Mensagem) in.readObject();
-            this.sala = resp.getSala();
+            Mensagem msg = (Mensagem) in.readObject();
+            sala = (Sala) msg.getDados();
         } catch (IOException ex) {
             Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -245,5 +316,14 @@ public class Jogo {
             Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-}
     
+    public void novaPartida() {
+        try {
+            out.writeObject(new Mensagem(Operacoes.NOVA_PARTIDA));
+        } catch (IOException ex) {
+            Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+}
+   
+

@@ -12,7 +12,6 @@ public class Mensagem implements Serializable {
     private Operacoes op;
     private Tipo tipo;
     private Serializable dados;
-    private Sala sala;
     private String mensagem;
     
     public Mensagem(Operacoes op, Serializable dados) {
@@ -27,17 +26,12 @@ public class Mensagem implements Serializable {
     public Operacoes getOp() {
         return op;
     }
+    public void setOp(Operacoes op) {
+        this.op = op;
+    }
     
     public Serializable getDados() {
         return dados;
-    }
-    
-    public Sala getSala() {
-        return sala;
-    }
-    
-    public void setSala(Sala sala) {
-        this.sala = sala;
     }
     
     public void setTipo(Tipo tipo) {

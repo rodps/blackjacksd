@@ -15,5 +15,7 @@ public enum Operacoes {
     INICIAR,
     ATUALIZAR,
     LOGIN,
-    SAIR;
+    SAIR,
+    NOVA_PARTIDA,
+    SUA_VEZ;
 }
