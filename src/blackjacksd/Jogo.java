@@ -46,6 +46,12 @@ public class Jogo {
                     Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            
+            if (jogador.getNome().equals(sala.getJogador1().getNome())) {
+                jogador.setFichas(sala.getJogador1().getFichas());
+            } else {
+                jogador.setFichas(sala.getJogador2().getFichas());
+            }
 
             if (jogador.getModo() == 0) {
                 String aposta = JOptionPane.showInputDialog("Suas fichas: "+jogador.getFichas()

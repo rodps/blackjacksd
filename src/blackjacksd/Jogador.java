@@ -61,6 +61,10 @@ public class Jogador implements Serializable{
         this.fichas += fichas;
     }
     
+    public void setFichas(int fichas) {
+        this.fichas = fichas;
+    }
+    
     public int getFichas() {
         return fichas;
     }
@@ -75,6 +79,10 @@ public class Jogador implements Serializable{
     
     public int getAposta() {
         return aposta;
+    }
+    
+    public void resetAposta() {
+        this.aposta = 0;
     }
     
     public int getCartas() {

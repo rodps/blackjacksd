@@ -157,11 +157,13 @@ class ClientThread extends Thread {
                        
                         if(s.getJogador1() != jogador) {
                             ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
+                            out.flush();
                             out.reset();
                             out.writeObject(new Mensagem(Operacoes.PARAR));
                             out.flush();
                         } else {
                             ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
+                            out.flush();
                             out.reset();
                             out.writeObject(new Mensagem(Operacoes.PARAR));  
                             out.flush();
@@ -181,10 +183,12 @@ class ClientThread extends Thread {
                     case NOVA_PARTIDA: {
                         jogador.setParou(false);
                         jogador.setCartas(0);
+                        jogador.resetAposta();
                         break;
                     }
                     case SAIR_JOGO: {
                         sair = false;
+                        System.out.println(jogador.getNome() + " saiu.");
                         break;
                     }
                     case MODO: {
