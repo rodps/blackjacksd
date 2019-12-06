@@ -81,8 +81,8 @@ class ClientThread extends Thread {
             
             streams.put(jogador, new JogadorStream(jogador, objOutputStream, objInputStream));
             Random random = new Random();
-            
-            while (true) {    
+            boolean sair = true;
+            while (sair) {    
                 Mensagem msg = (Mensagem) objInputStream.readObject();
                 Mensagem resposta = new Mensagem(Operacoes.RESPOSTA);
                 switch(msg.getOp()) {
@@ -104,7 +104,11 @@ class ClientThread extends Thread {
                     case ENTRAR_SALA: {
                         int idsala = (int) msg.getDados();
                         Sala sala = gSalas.procurarSala(idsala);
-                        sala.adicionarJogador(jogador);
+                        if (jogador.getModo() == 0) {
+                            sala.adicionarJogador(jogador);
+                        } else {
+                            sala.adicionarEspectador(jogador);
+                        }
                         jogadorSala.put(jogador, sala);
                         Mensagem resp = new Mensagem(Operacoes.RESPOSTA);
                         resp.setTipo(Tipo.SUCESSO);
@@ -169,18 +173,36 @@ class ClientThread extends Thread {
                         Sala s = jogadorSala.get(jogador);
                         s.removerJogador(jogador);
                         jogadorSala.remove(jogador);
+                        if (s.getJogador1() == null & s.getJogador2() == null) {
+                            gSalas.removerSala(s.getId());
+                        }
                         break;
                     }
                     case NOVA_PARTIDA: {
                         jogador.setParou(false);
-                        Sala s = jogadorSala.get(jogador);
-                        Jogador vez = s.getVez();
-                        JogadorStream js = streams.get(vez);
-                        js.getOutput().writeObject(new Mensagem(Operacoes.SUA_VEZ));
+                        jogador.setCartas(0);
+                        break;
+                    }
+                    case SAIR_JOGO: {
+                        sair = false;
+                        break;
+                    }
+                    case MODO: {
+                        int modo = (int) msg.getDados();
+                        jogador.setModo(modo);
+                        break;
+                    }
+                    case GANHOU: {
+                        jogador.darFichas(jogador.getAposta());
+                        break;
+                    }
+                    case PERDEU: {
+                        jogador.tirarFichas(jogador.getAposta());
                         break;
                     }
                 }
-            }         
+            }
+            clientSocket.close();
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {

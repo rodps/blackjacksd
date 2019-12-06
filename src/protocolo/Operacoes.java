@@ -17,5 +17,9 @@ public enum Operacoes {
     LOGIN,
     SAIR,
     NOVA_PARTIDA,
-    SUA_VEZ;
+    SUA_VEZ,
+    SAIR_JOGO,
+    MODO,
+    GANHOU,
+    PERDEU;
 }
