@@ -32,7 +32,12 @@ public class Client {
                        
             String username = JOptionPane.showInputDialog("Digite seu nome de usuário:");
             objOut.writeObject(new Mensagem(Operacoes.LOGIN, username));
-            Jogador jogador = (Jogador) objIn.readObject();
+            Mensagem respLogin = (Mensagem) objIn.readObject();
+            if (respLogin.getTipo() == Tipo.ERRO) {
+                System.out.println("Não foi possível fazer login: " + respLogin.getMensagem());
+                return;
+            }
+            Jogador jogador = (Jogador) respLogin.getDados();
             
             boolean sair = true;
             while (sair) {                

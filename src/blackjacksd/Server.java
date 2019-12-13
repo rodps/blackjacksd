@@ -57,18 +57,18 @@ class ClientThread extends Thread {
     ObjectOutputStream objOutputStream;
     ObjectInputStream objInputStream;
     HashMap<Jogador, Sala> jogadorSala;
-    HashMap<Jogador, Socket> jogadorSocket;
+    HashMap<String, Jogador> jogadoresOnline;
     HashMap<Jogador, JogadorStream> streams;
     Database db;
     
-    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket,
+    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadoresOnline,
             HashMap streams, Database db) {
         try {
             this.clientSocket = clientSocket;
             this.gSalas = gSalas;
             this.objInputStream = new ObjectInputStream(clientSocket.getInputStream());
             this.objOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            this.jogadorSocket = jogadorSocket;
+            this.jogadoresOnline = jogadoresOnline;
             this.jogadorSala = new HashMap<>();
             this.streams = streams;
             this.db = db;
@@ -81,13 +81,20 @@ class ClientThread extends Thread {
         try {
             Mensagem login = (Mensagem) objInputStream.readObject();
             String nome = (String) login.getDados();
+            if(jogadoresOnline.get(nome) != null) {
+                Mensagem msg = new Mensagem(Operacoes.RESPOSTA);
+                msg.setTipo(Tipo.ERRO);
+                msg.setMensagem("Usuário já está logado.");
+                objOutputStream.writeObject(msg);
+                return;
+            }
             Jogador jogador = db.getJogador(nome);
             if (jogador == null) {
                 jogador = db.addJogador(nome);
             }
-            objOutputStream.writeObject(jogador);
-            jogadorSocket.put(jogador, clientSocket);
+            objOutputStream.writeObject(new Mensagem(Operacoes.RESPOSTA, jogador));
             System.out.println(login.getDados() + " entrou.");
+            jogadoresOnline.put(nome, jogador);
             
             streams.put(jogador, new JogadorStream(jogador, objOutputStream, objInputStream));
             Random random = new Random();
@@ -208,6 +215,8 @@ class ClientThread extends Thread {
                     }
                     case SAIR_JOGO: {
                         sair = false;
+                        streams.remove(jogador);
+                        jogadoresOnline.remove(jogador.getNome());
                         System.out.println(jogador.getNome() + " saiu.");
                         break;
                     }
