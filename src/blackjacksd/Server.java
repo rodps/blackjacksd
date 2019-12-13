@@ -115,7 +115,14 @@ class ClientThread extends Thread {
                         int idsala = (int) msg.getDados();
                         Sala sala = gSalas.procurarSala(idsala);
                         if (jogador.getModo() == 0) {
-                            sala.adicionarJogador(jogador);
+                            if(!sala.adicionarJogador(jogador)) {
+                                Mensagem resp = new Mensagem(Operacoes.RESPOSTA);
+                                resp.setTipo(Tipo.ERRO);
+                                resp.setDados(sala);
+                                resp.setMensagem("Sala cheia.");
+                                objOutputStream.writeObject(resp);
+                                break;
+                            }
                         } else {
                             sala.adicionarEspectador(jogador);
                         }

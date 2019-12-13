@@ -94,18 +94,19 @@ public class Jogo {
                 Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            pedirCarta();
-            try {
-                Mensagem msg = (Mensagem) in.readObject();
-                sala = (Sala) msg.getDados();
-            } catch (IOException ex) {
-                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            if (jogador.getModo() == 0) {
+                pedirCarta();
+                try {
+                    Mensagem msg = (Mensagem) in.readObject();
+                    sala = (Sala) msg.getDados();
+                } catch (IOException ex) {
+                    Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                }
             
 //            atualizaSala(sala.getId());
-            if (jogador.getModo() == 0) {
+            
                 while (true) { 
                     if (sala.getJogador1().getNome().equals(jogador.getNome())) {
                         if(sala.getJogador1().getCartas() > 21){
