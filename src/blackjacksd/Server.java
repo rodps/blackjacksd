@@ -122,6 +122,7 @@ class ClientThread extends Thread {
                         Sala sala = gSalas.procurarSala(idsala);
                         resposta.setDados(sala);
                         resposta.setOp(Operacoes.ATUALIZAR);
+                        objOutputStream.flush();
                         objOutputStream.reset();
                         objOutputStream.writeObject(resposta);
                         break;
@@ -138,13 +139,13 @@ class ClientThread extends Thread {
                         if(s.getJogador1() != jogador) {
                             ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
                             out.reset();
-                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA));
+                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA, s));
                             out.reset();
                             out.flush();
                         } else {
                             ObjectOutputStream out = streams.get(s.getJogador2()).getOutput();
                             out.reset();
-                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA)); 
+                            out.writeObject(new Mensagem(Operacoes.PEDIR_CARTA, s)); 
                             out.reset();
                             out.flush();
                         }
@@ -158,6 +159,7 @@ class ClientThread extends Thread {
                         if(s.getJogador1() != jogador) {
                             ObjectOutputStream out = streams.get(s.getJogador1()).getOutput();
                             out.flush();
+                            
                             out.reset();
                             out.writeObject(new Mensagem(Operacoes.PARAR));
                             out.flush();

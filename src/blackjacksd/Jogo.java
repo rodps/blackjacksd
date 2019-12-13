@@ -55,7 +55,7 @@ public class Jogo {
 
             if (jogador.getModo() == 0) {
                 String aposta = JOptionPane.showInputDialog("Suas fichas: "+jogador.getFichas()
-                    +"\nFaça sua aposta:"); 
+                    +"\nFaça sua aposta:", 1); 
                 System.out.println("Você apostou " + aposta);
                 apostar(Integer.parseInt(aposta));
 
@@ -84,14 +84,7 @@ public class Jogo {
             }
             
 
-//            pedirCarta();
-//            try {
-//                in.readObject();
-//            } catch (IOException ex) {
-//                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (ClassNotFoundException ex) {
-//                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
-//            }
+
 
             System.out.println("\n");
             System.out.println("Distribuindo cartas...");
@@ -101,7 +94,17 @@ public class Jogo {
                 Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            atualizaSala(sala.getId());
+            pedirCarta();
+            try {
+                Mensagem msg = (Mensagem) in.readObject();
+                sala = (Sala) msg.getDados();
+            } catch (IOException ex) {
+                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+//            atualizaSala(sala.getId());
             if (jogador.getModo() == 0) {
                 while (true) { 
                     if (sala.getJogador1().getNome().equals(jogador.getNome())) {
@@ -111,6 +114,13 @@ public class Jogo {
                             parar();
                             break;
                         }
+                        if(sala.getJogador1().getCartas() == 21){
+                            JOptionPane.showConfirmDialog(null, "Vinte e um!", "Vinte e um!", JOptionPane.OK_OPTION);
+                            parar();
+                            break;
+                        }
+                        System.out.println("\n");
+                        System.out.println("É sua vez!");
                         System.out.println("Suas cartas: " + sala.getJogador1().getCartas());
                         System.out.println("Cartas do adversário: " + sala.getJogador2().getCartas());
 
@@ -142,7 +152,7 @@ public class Jogo {
 
                             Mensagem msg = (Mensagem) in.readObject();
                             if(msg.getOp() == Operacoes.PEDIR_CARTA) {
-                                atualizaSala(sala.getId());
+                                sala = (Sala) msg.getDados();
                             }
                             if(msg.getOp() == Operacoes.PARAR) {
                                 break;
@@ -163,6 +173,16 @@ public class Jogo {
                         if(sala.getJogador2().getCartas() > 21){
                             System.out.println("\n");
                             System.out.println("Você estourou!");
+                            try {
+                                sleep(1000);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(Jogo.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            parar();
+                            break;
+                        }
+                        if(sala.getJogador2().getCartas() == 21){
+                            JOptionPane.showConfirmDialog(null, "Vinte e um!", "Vinte e um!", JOptionPane.OK_OPTION);
                             parar();
                             break;
                         }
@@ -173,6 +193,7 @@ public class Jogo {
                             break;
                         }
                         System.out.println("\n");
+                        System.out.println("É sua vez!");
                         System.out.println("Suas cartas: " + sala.getJogador2().getCartas());
                         System.out.println("Cartas do adversário: " + sala.getJogador1().getCartas());
 
@@ -207,7 +228,7 @@ public class Jogo {
                             }
                             Mensagem msg = (Mensagem) in.readObject();
                             if(msg.getOp() == Operacoes.PEDIR_CARTA) {
-                                atualizaSala(sala.getId());
+                                sala = (Sala) msg.getDados();
                             }
                             if(msg.getOp() == Operacoes.PARAR) {
                                 break;
