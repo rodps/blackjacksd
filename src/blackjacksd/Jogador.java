@@ -20,7 +20,7 @@ public class Jogador implements Serializable{
     public Jogador(String nome) {
         this.nome = nome;
         this.cartas = 0;
-        this.fichas = 1000;
+        this.fichas = 0;
         this.modo = 0;
         this.parou = false;
     }

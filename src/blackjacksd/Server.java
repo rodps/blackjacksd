@@ -31,12 +31,15 @@ public class Server {
             ServerSocket listenSocket = new ServerSocket(5555);
             HashMap<Jogador, Socket> jogadorSocket = new HashMap<>();
             HashMap<Jogador, JogadorStream> streams = new HashMap<>();
+            Database db = new Database("jdbc:sqlite:/home/rodrigo/Documentos/blackjacksd/database/test.db");
+            db.init();
+            System.out.println("Banco de dados inicializado.");
 
             System.out.println("Aguardando conexões...");
             while(true) {
                 Socket clientSocket = listenSocket.accept();
                 System.out.println("Cliente conectado. IP: " + clientSocket.getInetAddress());
-                ClientThread clientThread = new ClientThread(clientSocket, gSalas, jogadorSocket, streams);
+                ClientThread clientThread = new ClientThread(clientSocket, gSalas, jogadorSocket, streams, db);
                 clientThread.start();
             }
                       
@@ -56,8 +59,10 @@ class ClientThread extends Thread {
     HashMap<Jogador, Sala> jogadorSala;
     HashMap<Jogador, Socket> jogadorSocket;
     HashMap<Jogador, JogadorStream> streams;
+    Database db;
     
-    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket, HashMap streams) {
+    public ClientThread (Socket clientSocket, GerenciadorSalas gSalas, HashMap jogadorSocket,
+            HashMap streams, Database db) {
         try {
             this.clientSocket = clientSocket;
             this.gSalas = gSalas;
@@ -66,6 +71,7 @@ class ClientThread extends Thread {
             this.jogadorSocket = jogadorSocket;
             this.jogadorSala = new HashMap<>();
             this.streams = streams;
+            this.db = db;
         } catch (IOException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -74,7 +80,11 @@ class ClientThread extends Thread {
     public void run() {
         try {
             Mensagem login = (Mensagem) objInputStream.readObject();
-            Jogador jogador = new Jogador((String) login.getDados());
+            String nome = (String) login.getDados();
+            Jogador jogador = db.getJogador(nome);
+            if (jogador == null) {
+                jogador = db.addJogador(nome);
+            }
             objOutputStream.writeObject(jogador);
             jogadorSocket.put(jogador, clientSocket);
             System.out.println(login.getDados() + " entrou.");
@@ -180,6 +190,7 @@ class ClientThread extends Thread {
                         if (s.getJogador1() == null & s.getJogador2() == null) {
                             gSalas.removerSala(s.getId());
                         }
+                        db.updateJogador(jogador.getNome(), jogador.getFichas());
                         break;
                     }
                     case NOVA_PARTIDA: {
